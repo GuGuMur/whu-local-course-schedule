@@ -246,6 +246,14 @@ const handleFileChange = (event) => {
   }
   reader.readAsText(file)
 }
+const copyUrl = () => {
+  const url = window.location.href
+  navigator.clipboard.writeText(url).then(() => {
+    message.success('链接已复制到剪贴板')
+  }).catch(() => {
+    message.error('复制链接失败')
+  })
+}
 
 const goGithub = () => {
   window.open('https://github.com/GuGuMur/whu-loacl-course-schedule')
