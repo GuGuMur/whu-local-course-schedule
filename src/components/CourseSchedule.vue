@@ -256,7 +256,7 @@ const copyUrl = () => {
 }
 
 const goGithub = () => {
-  window.open('https://github.com/GuGuMur/whu-loacl-course-schedule')
+  window.open('https://github.com/GuGuMur/whu-local-course-schedule')
 }
 
 const openDoc = () => {
