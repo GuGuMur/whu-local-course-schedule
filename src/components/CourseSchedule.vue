@@ -55,6 +55,13 @@
       <n-card title="选课中心" class="full-height-card"
         content-style="display: flex; flex-direction: column; padding: 10px; overflow: hidden;"
         header-style="padding: 10px 16px; flex-shrink: 0;">
+        <template #header-extra>
+          <n-space>
+            <n-button size="small" secondary type="primary" @click="openDoc">
+              打开说明
+            </n-button>
+          </n-space>
+        </template>
         <div class="search-bar">
           <n-input v-model:value="searchText" placeholder="搜索课程名称 / 教师姓名..." clearable />
         </div>
@@ -74,6 +81,34 @@
       </n-descriptions>
     </n-modal>
 
+    <n-modal v-model:show="showDoc" preset="card" style="width: 600px;" title="使用说明">
+      <n-space vertical size="large">
+        <div>
+          <n-p>点击课名展开详细信息，鼠标放置在时间/地点、备注上可以看到被省略的内容，点击选课自动同步到左侧课表，支持JSON导出和导入（仅对应本学期内容）。</n-p>
+        </div>
+
+        <n-divider style="margin: 12px 0;" />
+
+        <n-space align="center" justify="space-between">
+          <span>欢迎复制链接分享给同学们使用：</span>
+          <n-button size="small" ghost type="primary" @click="copyUrl">
+            点击复制链接
+          </n-button>
+        </n-space>
+
+        <n-space align="center" justify="space-between">
+          <span>也欢迎给 Github Repo 点个 Star：</span>
+          <n-button size="small" color="#24292f" @click="goGithub">
+            <template #icon>
+              <n-icon>
+                <Github />
+              </n-icon>
+            </template>
+            前往 GitHub
+          </n-button>
+        </n-space>
+      </n-space>
+    </n-modal>
     <input type="file" ref="fileInput" style="display: none" accept=".json" @change="handleFileChange">
   </div>
 </template>
@@ -86,10 +121,9 @@ import { Github } from '@vicons/fa'
 
 const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
 const timeSlots = [
-  ["8:00", "8:40"], ["8:45", "9:25"], ["9:30", "10:10"], ["10:30", "11:10"],
-  ["11:15", "11:55"], ["14:30", "15:10"], ["15:15", "15:55"], ["16:05", "16:45"],
-  ["16:50", "17:30"], ["18:40", "19:20"], ["19:25", "20:05"], ["20:10", "20:50"],
-  ["20:55", "21:35"]
+  ["8:00", "8:45"], ["8:50", "9:35"], ["9:50", "10:35"], ["10:40", "11:25"],["11:30", "12:15"],
+  ["11:15", "11:55"], ["14:05", "14:50"], ["14:55", "15:40"], ["16:45", "17:25"],
+  ["17:30", "18:15"], ["18:30", "19:15"], ["19:20", "20:05"], ["20:10", "20:55"],
 ]
 
 const rawCourses = ref([])
@@ -99,6 +133,7 @@ const message = useMessage()
 const fileInput = ref(null)
 
 const showDetailModal = ref(false)
+const showDoc = ref(false)
 const currentDetailRow = ref({})
 
 const parseRange = (str) => {
@@ -152,7 +187,7 @@ onMounted(() => {
       rawCourses.value = results.data
         .filter(row => row['课程名称'])
         .map((row, index) => ({
-          id: index, // 使用索引作为ID，需注意CSV文件变动会导致ID失效
+          id: index,
           name: row['课程名称'],
           teacher: row['成绩录入老师'] || row['其他教师'] || '',
           credit: parseFloat(row['学分']) || 0,
@@ -170,7 +205,6 @@ const handleExport = () => {
     message.warning('当前没有选择任何课程')
     return
   }
-  // 将 Set 转换为 Array 导出
   const dataToSave = Array.from(selectedCourseIds.value)
   const blob = new Blob([JSON.stringify(dataToSave)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
@@ -215,6 +249,10 @@ const handleFileChange = (event) => {
 
 const goGithub = () => {
   window.open('https://github.com/GuGuMur/whu-loacl-course-schedule')
+}
+
+const openDoc = () => {
+  showDoc.value = true
 }
 const filteredCourses = computed(() => {
   //   if (!searchText.value) return rawCourses.value.slice(0, 100)
@@ -331,7 +369,7 @@ const columns = [
 const pagination = {
   pageSize: 20,
   showSizePicker: true,
-  pageSizes: [3, 5, 7],
+  pageSizes: [10, 20, 50, 100],
   onChange: (page) => {
     pagination.page = page
   },
